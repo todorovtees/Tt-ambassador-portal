@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Настройки — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html" class="active">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Настройки</h1>
+      <span></span>
+    </header>
+
+    <main class="content" style="max-width:560px;">
+      <div class="card">
+        <form id="settings-form">
+          <div class="field"><label>Стандартна комисиона по подразбиране (%)</label><input name="default_commission_rate" type="number" step="0.01" min="0" max="100" /></div>
+          <div class="field"><label>Имейл на администратор</label><input name="admin_email" type="email" required /></div>
+          <div class="field"><label>Минимална сума за теглене (лв.)</label><input name="minimum_payout_amount" type="number" step="0.01" min="0" /></div>
+          <div class="field"><label>Прозорец за редакция на заявка (минути)</label><input name="payout_editing_window_minutes" type="number" min="1" /></div>
+          <div class="field"><label>Валута</label><input name="currency" value="BGN" disabled /></div>
+          <div class="field"><label>Метод на плащане</label><input name="payment_method" value="Revolut" disabled /></div>
+          <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:normal; font-family:var(--font-body); font-size:14px;">
+              <input type="checkbox" name="allow_custom_commission_rates" style="min-height:auto; width:auto;" />
+              Разреши персонализирани проценти на комисиона
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">ЗАПАЗИ НАСТРОЙКИТЕ</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase } from "../js/api.js";
+  import { initAdminPage, toast, friendlyError } from "../js/admin.js";
+
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+
+    const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
+    const form = document.getElementById("settings-form");
+    if (data) {
+      form.default_commission_rate.value = data.default_commission_rate;
+      form.admin_email.value = data.admin_email;
+      form.minimum_payout_amount.value = data.minimum_payout_amount;
+      form.payout_editing_window_minutes.value = data.payout_editing_window_minutes;
+      form.allow_custom_commission_rates.checked = data.allow_custom_commission_rates;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      try {
+        const { error } = await supabase.from("settings").update({
+          default_commission_rate: Number(form.default_commission_rate.value),
+          admin_email: form.admin_email.value.trim(),
+          minimum_payout_amount: Number(form.minimum_payout_amount.value),
+          payout_editing_window_minutes: Number(form.payout_editing_window_minutes.value),
+          allow_custom_commission_rates: form.allow_custom_commission_rates.checked,
+        }).eq("id", 1);
+        if (error) throw error;
+        toast("Настройките са запазени.");
+      } catch (err) {
+        toast(friendlyError(err), "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>
+</body>
+</html>

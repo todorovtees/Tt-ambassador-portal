@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Продажби — TT Ambassador Portal</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>PORTAL</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="sales.html" class="active">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="profile.html">Профил</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Амбасадор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Моите продажби</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="table-toolbar">
+        <p style="color:var(--gray-warm); font-size:14px;">Продажбите се въвеждат само от администратор.</p>
+        <select id="status-filter" style="border:1px solid var(--gray-line); padding:10px 14px; border-radius:var(--radius-sm); background:#fff;">
+          <option value="">Всички статуси</option>
+          <option value="pending">Изчакващи</option>
+          <option value="approved">Одобрени</option>
+          <option value="cancelled">Отменени</option>
+          <option value="rejected">Отказани</option>
+        </select>
+      </div>
+
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr>
+              <th>Поръчка</th><th>Дата</th><th>Стойност</th><th>Процент</th><th>Комисиона</th><th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="sales-body">
+            <tr><td colspan="6"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module" src="../js/sales.js"></script>
+</body>
+</html>

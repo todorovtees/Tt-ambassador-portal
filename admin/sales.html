@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Продажби — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html" class="active">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Продажби</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="table-toolbar">
+        <select id="status-filter" style="border:1px solid var(--gray-line); padding:10px 14px; border-radius:var(--radius-sm); background:#fff;">
+          <option value="">Всички статуси</option>
+          <option value="pending">Изчакващи</option>
+          <option value="approved">Одобрени</option>
+          <option value="cancelled">Отменени</option>
+          <option value="rejected">Отказани</option>
+        </select>
+        <button class="btn btn-primary" id="add-sale-btn">+ ДОБАВИ ПРОДАЖБА</button>
+      </div>
+
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr><th>Амбасадор</th><th>Поръчка</th><th>Дата</th><th>Стойност</th><th>Комисиона</th><th>Статус</th><th></th></tr>
+          </thead>
+          <tbody id="sales-body">
+            <tr><td colspan="7"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import {
+    initAdminPage, loadAllSales, addSale, updateSale, loadAmbassadorOptions,
+    formatBGN, formatDate, toast, friendlyError, confirmAction,
+  } from "../js/admin.js";
+  import * as AdminModule from "../js/admin.js";
+
+  function labelFor(status) { return { pending: "Изчакваща", approved: "Одобрена", cancelled: "Отменена", rejected: "Отказана" }[status] || status; }
+
+  async function refresh() {
+    const status = document.getElementById("status-filter").value;
+    const sales = await loadAllSales({ status });
+    const tbody = document.getElementById("sales-body");
+    if (sales.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="eyebrow">Няма продажби</span>Добавете първата продажба.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = sales.map((s) => `
+      <tr>
+        <td data-label="Амбасадор">${s.profiles?.first_name || ''} ${s.profiles?.last_name || ''}</td>
+        <td data-label="Поръчка" class="mono">#${s.order_number}</td>
+        <td data-label="Дата">${formatDate(s.sale_date)}</td>
+        <td data-label="Стойност" class="mono">${formatBGN(s.sale_value)}</td>
+        <td data-label="Комисиона" class="mono">${formatBGN(s.commission_amount)} (${s.commission_rate}%)</td>
+        <td data-label="Статус"><span class="pill pill-${s.status}">${labelFor(s.status)}</span></td>
+        <td data-label="">
+          <select data-status-change="${s.id}" style="border:1px solid var(--gray-line); padding:6px 8px; border-radius:var(--radius-sm); font-size:12px;">
+            <option value="pending" ${s.status==='pending'?'selected':''}>Изчакваща</option>
+            <option value="approved" ${s.status==='approved'?'selected':''}>Одобрена</option>
+            <option value="cancelled" ${s.status==='cancelled'?'selected':''}>Отменена</option>
+            <option value="rejected" ${s.status==='rejected'?'selected':''}>Отказана</option>
+          </select>
+        </td>
+      </tr>`).join("");
+
+    tbody.querySelectorAll("[data-status-change]").forEach((sel) => {
+      sel.addEventListener("change", async () => {
+        const id = sel.dataset.statusChange;
+        if (sel.value === "cancelled") {
+          const ok = await confirmAction("Сигурни ли сте, че искате да отмените тази продажба?");
+          if (!ok) { await refresh(); return; }
+        }
+        try {
+          await updateSale(id, { status: sel.value });
+          toast("Статусът е обновен.");
+          await refresh();
+        } catch (err) {
+          toast(friendlyError(err), "error");
+        }
+      });
+    });
+  }
+
+  function openAddSaleModal() {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px;">
+        <h2 style="font-size:20px; margin-bottom:20px;">+ Добави продажба</h2>
+        <form id="sale-form">
+          <div class="field"><label>Амбасадор</label><select name="ambassador_id" id="sale-ambassador" required></select></div>
+          <div class="field"><label>Номер на поръчка</label><input name="order_number" required placeholder="TT-1024" /></div>
+          <div class="field"><label>Дата</label><input name="sale_date" type="date" required /></div>
+          <div class="field"><label>Стойност на поръчката (лв.)</label><input name="sale_value" id="sale-value" type="number" min="0.01" step="0.01" required /></div>
+          <div class="field"><label>Статус</label>
+            <select name="status"><option value="pending">Изчакваща</option><option value="approved">Одобрена</option></select>
+          </div>
+          <div class="field"><label>Бележка (незадължително)</label><textarea name="note" rows="2"></textarea></div>
+          <p class="hint" id="commission-preview" style="margin-bottom:var(--space-4);">Комисиона: —</p>
+          <div style="display:flex; gap:12px;">
+            <button type="button" class="btn btn-secondary" data-close>Отказ</button>
+            <button type="submit" class="btn btn-primary btn-block">ДОБАВИ</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay || e.target.dataset.close !== undefined) overlay.remove(); });
+
+    const ambassadorSelect = overlay.querySelector("#sale-ambassador");
+    loadAmbassadorOptions(ambassadorSelect).then(updatePreview);
+
+    const valueInput = overlay.querySelector("#sale-value");
+    const preview = overlay.querySelector("#commission-preview");
+    function updatePreview() {
+      const rate = Number(ambassadorSelect.selectedOptions[0]?.dataset.rate || 0);
+      const value = Number(valueInput.value || 0);
+      preview.textContent = `Комисиона: ${(value * rate / 100).toFixed(2)} лв. (${rate}%)`;
+    }
+    ambassadorSelect.addEventListener("change", updatePreview);
+    valueInput.addEventListener("input", updatePreview);
+
+    overlay.querySelector("#sale-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+      try {
+        await addSale({
+          ambassador_id: form.ambassador_id.value,
+          order_number: form.order_number.value.trim(),
+          sale_date: form.sale_date.value,
+          sale_value: Number(form.sale_value.value),
+          status: form.status.value,
+          note: form.note.value.trim() || null,
+          created_by: AdminModule.adminProfile?.id,
+        });
+        toast("Продажбата е добавена успешно.");
+        overlay.remove();
+        await refresh();
+      } catch (err) {
+        toast(friendlyError(err), "error");
+        btn.disabled = false; btn.textContent = "ДОБАВИ";
+      }
+    });
+  }
+
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+    await refresh();
+    document.getElementById("status-filter").addEventListener("change", refresh);
+    document.getElementById("add-sale-btn").addEventListener("click", openAddSaleModal);
+  })();
+</script>
+</body>
+</html>

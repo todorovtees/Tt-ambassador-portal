@@ -1,0 +1,170 @@
+/* ==========================================================
+   Dashboard shell — sidebar + header + content
+   ========================================================== */
+
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------------- Sidebar ---------------- */
+.sidebar {
+  background: var(--ink);
+  color: var(--bone);
+  padding: var(--space-6) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-8);
+}
+.sidebar-mark span { color: var(--brass); }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: rgba(250,250,248,0.6);
+  transition: background var(--transition), color var(--transition);
+  min-height: 44px;
+}
+.sidebar-nav a:hover { color: var(--bone); background: rgba(250,250,248,0.06); }
+.sidebar-nav a.active { color: var(--bone); background: rgba(250,250,248,0.1); }
+
+.sidebar-footer { border-top: 1px solid rgba(250,250,248,0.12); padding-top: var(--space-4); }
+.sidebar-user { font-size: 13px; color: rgba(250,250,248,0.6); margin-bottom: var(--space-3); }
+.sidebar-user strong { display: block; color: var(--bone); font-size: 14px; }
+
+.sidebar-logout {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(250,250,248,0.5);
+}
+.sidebar-logout:hover { color: var(--bone); }
+
+/* ---------------- Header ---------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-7);
+  border-bottom: 1px solid var(--gray-line);
+  background: var(--bone);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.topbar h1 { font-size: 22px; }
+.hamburger { display: none; }
+
+.notif-bell { position: relative; }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--red); color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  min-width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.content { padding: var(--space-7); }
+
+/* ---------------- Stat cards ---------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-7);
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--gray-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+.stat-card .eyebrow { margin-bottom: var(--space-3); }
+.stat-card .value {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.stat-card.featured {
+  background: var(--ink);
+  color: var(--bone);
+  border-color: var(--ink);
+  grid-column: span 2;
+}
+.stat-card.featured .eyebrow { color: rgba(250,250,248,0.5); }
+.stat-card.featured .value { font-size: 40px; }
+.stat-card.featured .btn { margin-top: var(--space-4); }
+
+/* ---------------- Tables ---------------- */
+.table-wrap {
+  background: #fff;
+  border: 1px solid var(--gray-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-warm);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--gray-line);
+  white-space: nowrap;
+}
+tbody td {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--gray-line);
+  font-size: 14px;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--beige); cursor: pointer; }
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+/* ---------------- Section heading ---------------- */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ---------------- Countdown ---------------- */
+.countdown {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--brass);
+}

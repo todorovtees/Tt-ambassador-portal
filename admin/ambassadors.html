@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Амбасадори — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html" class="active">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Амбасадори</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="table-toolbar">
+        <input id="search-input" placeholder="Търси по име или имейл..." style="border:1px solid var(--gray-line); padding:10px 14px; border-radius:var(--radius-sm); min-width:240px;" />
+        <button class="btn btn-primary" id="add-ambassador-btn">+ ДОБАВИ АМБАСАДОР</button>
+      </div>
+
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr><th>Име</th><th>Имейл</th><th>Комисиона</th><th>Статус</th><th>Присъединен</th><th></th></tr>
+          </thead>
+          <tbody id="ambassadors-body">
+            <tr><td colspan="6"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Detail panel (shown when ?id= present) -->
+<div id="detail-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal" style="max-width:520px;">
+    <h2 style="font-size:20px; margin-bottom:20px;">Профил на амбасадор</h2>
+    <form id="detail-form">
+      <div class="field"><label>Име</label><input id="d-first" required /></div>
+      <div class="field"><label>Фамилия</label><input id="d-last" required /></div>
+      <div class="field"><label>Имейл</label><input id="d-email" disabled /></div>
+      <div class="field"><label>Телефон</label><input id="d-phone" /></div>
+      <div class="field"><label>Instagram</label><input id="d-ig" /></div>
+      <div class="field"><label>TikTok</label><input id="d-tt" /></div>
+      <div class="field">
+        <label>Процент комисиона</label>
+        <select id="d-rate"><option>3</option><option>5</option><option>7</option><option>10</option></select>
+      </div>
+      <div class="field">
+        <label>Статус</label>
+        <select id="d-status">
+          <option value="active">Активен</option>
+          <option value="suspended">Спрян</option>
+          <option value="deactivated">Деактивиран</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:var(--space-5);">
+        <button type="button" class="btn btn-secondary" id="close-detail">Затвори</button>
+        <button type="button" class="btn btn-danger" id="reset-password-btn">НУЛИРАЙ ПАРОЛА</button>
+        <button type="submit" class="btn btn-primary btn-block">ЗАПАЗИ</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase } from "../js/api.js";
+  import {
+    initAdminPage, loadAmbassadors, createAmbassador, updateAmbassador,
+    toast, friendlyError,
+  } from "../js/admin.js";
+
+  let profile;
+
+  function openCreateModal() {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px;">
+        <h2 style="font-size:20px; margin-bottom:20px;">+ Добави амбасадор</h2>
+        <form id="create-form">
+          <div class="field"><label>Име</label><input name="first_name" required /></div>
+          <div class="field"><label>Фамилия</label><input name="last_name" required /></div>
+          <div class="field"><label>Имейл</label><input name="email" type="email" required /></div>
+          <div class="field"><label>Комисиона (%)</label>
+            <select name="commission_rate"><option value="3">3%</option><option value="5" selected>5%</option><option value="7">7%</option><option value="10">10%</option></select>
+          </div>
+          <div class="field"><label>Instagram</label><input name="instagram" /></div>
+          <div class="field"><label>TikTok</label><input name="tiktok" /></div>
+          <div class="field"><label>Телефон</label><input name="phone" /></div>
+          <p class="hint" style="margin-bottom:var(--space-4);">Амбасадорът ще получи имейл покана, за да зададе своя собствена парола. Администраторът никога не вижда паролата.</p>
+          <div style="display:flex; gap:12px;">
+            <button type="button" class="btn btn-secondary" data-close>Отказ</button>
+            <button type="submit" class="btn btn-primary btn-block">ИЗПРАТИ ПОКАНА</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay || e.target.dataset.close !== undefined) overlay.remove(); });
+
+    overlay.querySelector("#create-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+      try {
+        await createAmbassador({
+          first_name: form.first_name.value.trim(),
+          last_name: form.last_name.value.trim(),
+          email: form.email.value.trim(),
+          commission_rate: Number(form.commission_rate.value),
+          instagram: form.instagram.value.trim() || null,
+          tiktok: form.tiktok.value.trim() || null,
+          phone: form.phone.value.trim() || null,
+        });
+        toast("Поканата е изпратена успешно.");
+        overlay.remove();
+        await loadAmbassadors();
+      } catch (err) {
+        toast(friendlyError(err), "error");
+        btn.disabled = false; btn.textContent = "ИЗПРАТИ ПОКАНА";
+      }
+    });
+  }
+
+  async function openDetail(id) {
+    const { data } = await supabase.from("profiles").select("*").eq("id", id).single();
+    if (!data) return;
+    document.getElementById("d-first").value = data.first_name;
+    document.getElementById("d-last").value = data.last_name;
+    document.getElementById("d-email").value = data.email;
+    document.getElementById("d-phone").value = data.phone || "";
+    document.getElementById("d-ig").value = data.instagram || "";
+    document.getElementById("d-tt").value = data.tiktok || "";
+    document.getElementById("d-rate").value = data.commission_rate;
+    document.getElementById("d-status").value = data.status;
+    document.getElementById("detail-overlay").style.display = "flex";
+    document.getElementById("detail-overlay").dataset.id = id;
+
+    document.getElementById("reset-password-btn").onclick = async () => {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: window.location.origin + "/login.html?reset=1",
+      });
+      if (error) toast(friendlyError(error), "error");
+      else toast("Изпратена е връзка за нулиране на паролата.");
+    };
+  }
+
+  document.getElementById("close-detail").addEventListener("click", () => {
+    document.getElementById("detail-overlay").style.display = "none";
+    history.pushState({}, "", "ambassadors.html");
+  });
+
+  document.getElementById("detail-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("detail-overlay").dataset.id;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    try {
+      await updateAmbassador(id, {
+        first_name: document.getElementById("d-first").value.trim(),
+        last_name: document.getElementById("d-last").value.trim(),
+        phone: document.getElementById("d-phone").value.trim() || null,
+        instagram: document.getElementById("d-ig").value.trim() || null,
+        tiktok: document.getElementById("d-tt").value.trim() || null,
+        commission_rate: Number(document.getElementById("d-rate").value),
+        status: document.getElementById("d-status").value,
+      });
+      toast("Промените са запазени.");
+      document.getElementById("detail-overlay").style.display = "none";
+      await loadAmbassadors();
+    } catch (err) {
+      toast(friendlyError(err), "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  (async () => {
+    profile = await initAdminPage();
+    if (!profile) return;
+    await loadAmbassadors();
+
+    document.getElementById("add-ambassador-btn").addEventListener("click", openCreateModal);
+    document.getElementById("search-input").addEventListener("input", (e) => loadAmbassadors(e.target.value));
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("id")) openDetail(params.get("id"));
+  })();
+</script>
+</body>
+</html>

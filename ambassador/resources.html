@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ресурси — TT Ambassador Portal</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+<style>
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
+  .resource-card { background: #fff; border: 1px solid var(--gray-line); border-radius: var(--radius-md); overflow: hidden; }
+  .resource-card .thumb { aspect-ratio: 4/3; background: var(--beige); display:flex; align-items:center; justify-content:center; color: var(--gray-warm); font-family: var(--font-mono); font-size: 12px; }
+  .resource-card .body { padding: var(--space-4); }
+  .resource-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .resource-card p { font-size: 12px; color: var(--gray-warm); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>PORTAL</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="resources.html" class="active">Ресурси</a>
+      <a href="profile.html">Профил</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Амбасадор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>TT Ресурси</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="resource-grid" id="resource-grid">
+        <div class="resource-card"><div class="thumb skeleton" style="height:180px;"></div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase } from "../js/api.js";
+  import { requireAuth, bindSidebarToggle } from "../js/auth.js";
+
+  (async function () {
+    const profile = await requireAuth("ambassador");
+    if (!profile) return;
+    bindSidebarToggle();
+
+    const { data } = await supabase.from("resources").select("*").order("created_at", { ascending: false });
+    const grid = document.getElementById("resource-grid");
+    if (!data || data.length === 0) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><span class="eyebrow">Няма ресурси</span>Администраторът все още не е качил материали.</div>`;
+      return;
+    }
+    grid.innerHTML = data.map((r) => `
+      <div class="resource-card">
+        <a href="${r.file_url}" target="_blank" rel="noopener">
+          <div class="thumb">${r.category || 'Файл'}</div>
+        </a>
+        <div class="body">
+          <h3>${r.title}</h3>
+          <p>${r.description || ''}</p>
+        </div>
+      </div>`).join("");
+  })();
+</script>
+</body>
+</html>

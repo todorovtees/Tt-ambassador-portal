@@ -1,0 +1,99 @@
+/* ==========================================================
+   Responsive rules — mobile-first overrides
+   Tested at: 320 / 375 / 390 / 430 / 768 / 1024 / 1440+
+   ========================================================== */
+
+@media (max-width: 1024px) {
+  .stat-card.featured { grid-column: span 1; }
+}
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 280px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    z-index: 200;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,10,10,0.5);
+    z-index: 190;
+  }
+  .sidebar-backdrop.open { display: block; }
+
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; height: 44px;
+  }
+
+  .topbar { padding: var(--space-4); }
+  .topbar h1 { font-size: 18px; }
+  .content { padding: var(--space-4); }
+
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .stat-card.featured { grid-column: span 2; }
+}
+
+@media (max-width: 640px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .stat-card.featured { grid-column: span 1; }
+
+  /* Tables become stacked cards */
+  .table-wrap.responsive-cards table,
+  .table-wrap.responsive-cards thead {
+    display: none;
+  }
+  .table-wrap.responsive-cards tbody,
+  .table-wrap.responsive-cards tr,
+  .table-wrap.responsive-cards td {
+    display: block;
+    width: 100%;
+  }
+  .table-wrap.responsive-cards tr {
+    border-bottom: 1px solid var(--gray-line);
+    padding: var(--space-4) var(--space-5);
+  }
+  .table-wrap.responsive-cards td {
+    border: none;
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .table-wrap.responsive-cards td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-warm);
+  }
+
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal { max-width: 100%; border-radius: var(--radius-md) var(--radius-md) 0 0; max-height: 92vh; }
+
+  .table-toolbar { flex-direction: column; align-items: stretch; }
+  .section-head { flex-direction: column; align-items: stretch; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 26px; }
+  .btn { width: 100%; }
+  .btn.btn-inline { width: auto; }
+}
+
+/* Landing page responsive */
+@media (max-width: 768px) {
+  .hero-headline { font-size: 42px !important; }
+  .landing-nav-links { display: none; }
+}

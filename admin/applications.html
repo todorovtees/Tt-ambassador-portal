@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Кандидатури — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html" class="active">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Кандидатури</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr><th>Име</th><th>Имейл</th><th>Instagram</th><th>TikTok</th><th>Дата</th><th>Статус</th><th></th></tr>
+          </thead>
+          <tbody id="apps-body">
+            <tr><td colspan="7"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase } from "../js/api.js";
+  import { initAdminPage, formatDate, toast, friendlyError } from "../js/admin.js";
+
+  function labelFor(s) { return { pending: "Изчаква", approved: "Одобрена", rejected: "Отказана" }[s] || s; }
+
+  async function refresh() {
+    const { data } = await supabase.from("applications").select("*").order("created_at", { ascending: false });
+    const tbody = document.getElementById("apps-body");
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="eyebrow">Няма кандидатури</span>Все още няма подадени кандидатури от лендинг страницата.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map((a) => `
+      <tr>
+        <td data-label="Име">${a.name}</td>
+        <td data-label="Имейл">${a.email}</td>
+        <td data-label="Instagram">${a.instagram || '—'}</td>
+        <td data-label="TikTok">${a.tiktok || '—'}</td>
+        <td data-label="Дата">${formatDate(a.created_at)}</td>
+        <td data-label="Статус"><span class="pill pill-${a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending'}">${labelFor(a.status)}</span></td>
+        <td data-label="">
+          ${a.status === 'pending' ? `
+            <button class="btn btn-ghost btn-inline" data-approve="${a.id}">Одобри</button>
+            <button class="btn btn-ghost btn-inline" data-reject="${a.id}">Откажи</button>` : ''}
+        </td>
+      </tr>`).join("");
+
+    tbody.querySelectorAll("[data-approve]").forEach((btn) => btn.addEventListener("click", () => setStatus(btn.dataset.approve, "approved")));
+    tbody.querySelectorAll("[data-reject]").forEach((btn) => btn.addEventListener("click", () => setStatus(btn.dataset.reject, "rejected")));
+  }
+
+  async function setStatus(id, status) {
+    try {
+      const { error } = await supabase.from("applications").update({ status }).eq("id", id);
+      if (error) throw error;
+      toast(status === "approved" ? "Кандидатурата е одобрена. Не забравяйте да създадете профил в раздел Амбасадори." : "Кандидатурата е отказана.");
+      await refresh();
+    } catch (err) {
+      toast(friendlyError(err), "error");
+    }
+  }
+
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+    await refresh();
+  })();
+</script>
+</body>
+</html>

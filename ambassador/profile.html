@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Профил — TT Ambassador Portal</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>PORTAL</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="profile.html" class="active">Профил</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Амбасадор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Профил</h1>
+      <span></span>
+    </header>
+
+    <main class="content" style="max-width:560px;">
+      <div class="card">
+        <form id="profile-form">
+          <div class="field"><label>Име</label><input value="" disabled id="pf-first" /></div>
+          <div class="field"><label>Фамилия</label><input value="" disabled id="pf-last" /></div>
+          <div class="field"><label>Имейл</label><input value="" disabled id="pf-email" /><span class="hint">Имейлът не може да се променя свободно. Свържете се с администратор.</span></div>
+          <div class="field"><label>Процент комисиона</label><input value="" disabled id="pf-rate" /><span class="hint">Само администратор може да променя комисионата.</span></div>
+          <hr style="border:none; border-top:1px solid var(--gray-line); margin:var(--space-5) 0;" />
+          <div class="field"><label for="pf-ig">Instagram</label><input id="pf-ig" name="instagram" /></div>
+          <div class="field"><label for="pf-tt">TikTok</label><input id="pf-tt" name="tiktok" /></div>
+          <div class="field"><label for="pf-phone">Телефон</label><input id="pf-phone" name="phone" /></div>
+          <div class="field"><label for="pf-revolut">Revolut идентификатор</label><input id="pf-revolut" name="revolut_identifier" /></div>
+          <button type="submit" class="btn btn-primary">ЗАПАЗИ ПРОМЕНИТЕ</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase, toast, friendlyError } from "../js/api.js";
+  import { requireAuth, bindSidebarToggle, getCurrentProfile } from "../js/auth.js";
+
+  (async function () {
+    const profile = await requireAuth("ambassador");
+    if (!profile) return;
+    bindSidebarToggle();
+
+    document.getElementById("pf-first").value = profile.first_name;
+    document.getElementById("pf-last").value = profile.last_name;
+    document.getElementById("pf-email").value = profile.email;
+    document.getElementById("pf-rate").value = profile.commission_rate + "%";
+    document.getElementById("pf-ig").value = profile.instagram || "";
+    document.getElementById("pf-tt").value = profile.tiktok || "";
+    document.getElementById("pf-phone").value = profile.phone || "";
+    document.getElementById("pf-revolut").value = profile.revolut_identifier || "";
+
+    document.getElementById("profile-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      try {
+        const { error } = await supabase.from("profiles").update({
+          instagram: document.getElementById("pf-ig").value.trim() || null,
+          tiktok: document.getElementById("pf-tt").value.trim() || null,
+          phone: document.getElementById("pf-phone").value.trim() || null,
+          revolut_identifier: document.getElementById("pf-revolut").value.trim() || null,
+        }).eq("id", profile.id);
+        if (error) throw error;
+        toast("Профилът е обновен успешно.");
+      } catch (err) {
+        toast(friendlyError(err), "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>
+</body>
+</html>

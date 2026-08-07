@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Табло — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="active">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Табло на администратор</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="eyebrow">Амбасадори</div><div class="value mono" id="stat-ambassadors">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Активни амбасадори</div><div class="value mono" id="stat-active">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Общо продажби</div><div class="value mono" id="stat-total-sales">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Стойност на продажбите</div><div class="value mono" id="stat-sales-value">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Общо комисиони</div><div class="value mono" id="stat-commissions">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Изчакващи изплащания</div><div class="value mono" id="stat-pending-payouts">—</div></div>
+        <div class="stat-card"><div class="eyebrow">Изплатени</div><div class="value mono" id="stat-paid-payouts">—</div></div>
+      </div>
+
+      <div class="section-head">
+        <h2 style="font-size:20px;">Бързи действия</h2>
+      </div>
+      <div style="display:flex; gap:var(--space-3); flex-wrap:wrap;">
+        <a href="ambassadors.html" class="btn btn-secondary">+ ДОБАВИ АМБАСАДОР</a>
+        <a href="sales.html" class="btn btn-secondary">+ ДОБАВИ ПРОДАЖБА</a>
+        <a href="payouts.html" class="btn btn-secondary">ПРЕГЛЕД ЗАЯВКИ</a>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { initAdminPage, loadAdminDashboard } from "../js/admin.js";
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+    await loadAdminDashboard();
+  })();
+</script>
+</body>
+</html>

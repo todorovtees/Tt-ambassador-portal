@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Заявки за изплащане — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html" class="active">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Заявки за изплащане</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="table-toolbar">
+        <select id="status-filter" style="border:1px solid var(--gray-line); padding:10px 14px; border-radius:var(--radius-sm); background:#fff;">
+          <option value="">Всички статуси</option>
+          <option value="submitted">Подадени</option>
+          <option value="under_review">Преглеждат се</option>
+          <option value="approved">Одобрени</option>
+          <option value="paid">Изплатени</option>
+          <option value="rejected">Отказани</option>
+          <option value="cancelled">Анулирани</option>
+        </select>
+      </div>
+
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr><th>Заявка</th><th>Амбасадор</th><th>Сума</th><th>Дата</th><th>Статус</th><th>Revolut</th><th></th></tr>
+          </thead>
+          <tbody id="payouts-body">
+            <tr><td colspan="7"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import {
+    initAdminPage, loadAllPayouts, setPayoutStatus,
+    formatBGN, formatDate, toast, friendlyError, confirmAction,
+  } from "../js/admin.js";
+
+  function labelFor(status) {
+    return { submitted: "Подадена", under_review: "Преглежда се", approved: "Одобрена", paid: "Изплатена", rejected: "Отказана", cancelled: "Анулирана" }[status] || status;
+  }
+
+  async function refresh() {
+    const status = document.getElementById("status-filter").value;
+    const payouts = await loadAllPayouts(status);
+    const tbody = document.getElementById("payouts-body");
+    if (payouts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="eyebrow">Няма заявки</span>Все още няма заявки за изплащане.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = payouts.map((p) => `
+      <tr>
+        <td data-label="Заявка" class="mono">#${p.request_number}</td>
+        <td data-label="Амбасадор">${p.profiles?.first_name || ''} ${p.profiles?.last_name || ''}</td>
+        <td data-label="Сума" class="mono">${formatBGN(p.amount)}</td>
+        <td data-label="Дата">${formatDate(p.created_at)}</td>
+        <td data-label="Статус"><span class="pill pill-${p.status}">${labelFor(p.status)}</span></td>
+        <td data-label="Revolut" class="mono" style="font-size:12px;">${p.revolut_identifier}</td>
+        <td data-label="" style="display:flex; gap:6px; flex-wrap:wrap;">
+          ${actionButtons(p)}
+        </td>
+      </tr>`).join("");
+
+    tbody.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => handleAction(btn.dataset.action, btn.dataset.id));
+    });
+  }
+
+  function actionButtons(p) {
+    const buttons = [];
+    if (["submitted", "under_review"].includes(p.status)) {
+      buttons.push(`<button class="btn btn-ghost btn-inline" data-action="approve" data-id="${p.id}">Одобри</button>`);
+      buttons.push(`<button class="btn btn-ghost btn-inline" data-action="reject" data-id="${p.id}">Откажи</button>`);
+    }
+    if (p.status === "approved") {
+      buttons.push(`<button class="btn btn-primary btn-inline" data-action="paid" data-id="${p.id}">Маркирай изплатена</button>`);
+    }
+    if (!["paid", "cancelled", "rejected"].includes(p.status)) {
+      buttons.push(`<button class="btn btn-danger btn-inline" data-action="cancel" data-id="${p.id}">Анулирай</button>`);
+    }
+    return buttons.join("");
+  }
+
+  async function handleAction(action, id) {
+    try {
+      if (action === "approve") {
+        await setPayoutStatus(id, "approved");
+        toast("Заявката е одобрена.");
+      } else if (action === "reject") {
+        const ok = await confirmAction("Сигурни ли сте, че искате да откажете тази заявка?");
+        if (!ok) return;
+        await setPayoutStatus(id, "rejected");
+        toast("Заявката е отказана.");
+      } else if (action === "cancel") {
+        const ok = await confirmAction("Сигурни ли сте, че искате да анулирате тази заявка?");
+        if (!ok) return;
+        await setPayoutStatus(id, "cancelled");
+        toast("Заявката е анулирана.");
+      } else if (action === "paid") {
+        const ok = await confirmAction("Сигурни ли сте, че искате да маркирате тази заявка като изплатена? Това действие ще бъде записано.");
+        if (!ok) return;
+        const reference = prompt("Референтен номер на плащането (незадължително):") || null;
+        await setPayoutStatus(id, "paid", { payment_reference: reference, paid_at: new Date().toISOString() });
+        toast("Заявката е маркирана като изплатена.");
+      }
+      await refresh();
+    } catch (err) {
+      toast(friendlyError(err), "error");
+    }
+  }
+
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+    await refresh();
+    document.getElementById("status-filter").addEventListener("change", refresh);
+  })();
+</script>
+</body>
+</html>

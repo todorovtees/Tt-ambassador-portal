@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Вход — TT Ambassador Portal</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { display: flex; min-height: 100vh; }
+  .login-side {
+    flex: 1; background: var(--ink); color: var(--bone);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: var(--space-8);
+  }
+  .login-mark { font-family: var(--font-display); font-weight: 800; font-size: 22px; }
+  .login-mark span { color: var(--brass); }
+  .login-quote { font-family: var(--font-display); font-size: clamp(28px, 3vw, 40px); font-weight: 700; line-height: 1.15; max-width: 420px; }
+  .login-quote .accent { color: var(--brass); }
+  .login-form-side { flex: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+  .login-form-wrap { width: 100%; max-width: 380px; }
+  .login-form-wrap .eyebrow { margin-bottom: var(--space-3); }
+  .login-form-wrap h1 { font-size: 30px; margin-bottom: var(--space-6); }
+  .login-links { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-4); }
+  .login-links a { font-size: 13px; color: var(--gray-warm); }
+  .login-links a:hover { color: var(--ink); }
+  @media (max-width: 900px) { .login-side { display: none; } }
+</style>
+</head>
+<body>
+
+<aside class="login-side">
+  <div class="login-mark">TODOROV <span>TEES</span></div>
+  <p class="login-quote">Създавай в свой стил.<br>Печели с <span class="accent">TT</span>.</p>
+  <div class="eyebrow">© 2026 TODOROV TEES</div>
+</aside>
+
+<main class="login-form-side">
+  <div class="login-form-wrap">
+    <div class="eyebrow">TT AMBASSADOR PORTAL</div>
+    <h1>Вход в профила</h1>
+    <form id="login-form">
+      <div class="field">
+        <label for="email">Имейл</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="password">Парола</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">ВХОД</button>
+      <div class="login-links">
+        <a href="#" id="forgot-link">Забравена парола?</a>
+        <a href="index.html">← Начало</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script src="js/config.js"></script>
+<script type="module">
+  import { supabase, toast, friendlyError } from "./js/api.js";
+  import { bindLoginForm } from "./js/auth.js";
+
+  bindLoginForm(document.getElementById("login-form"));
+
+  document.getElementById("forgot-link").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    if (!email) { toast("Въведете имейл адрес, за да продължите.", "error"); return; }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/login.html?reset=1",
+      });
+      if (error) throw error;
+      toast("Изпратихме връзка за възстановяване на паролата на вашия имейл.");
+    } catch (err) {
+      toast(friendlyError(err), "error");
+    }
+  });
+
+  // Handle invite / password-reset flow: Supabase redirects here with a recovery token
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("setup") || params.get("reset")) {
+    supabase.auth.onAuthStateChange(async (event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        const newPassword = prompt("Задайте нова парола за профила си:");
+        if (newPassword && newPassword.length >= 8) {
+          const { error } = await supabase.auth.updateUser({ password: newPassword });
+          if (!error) toast("Паролата е зададена успешно. Влезте с новата парола.");
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

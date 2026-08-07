@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Известия — Администратор</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+<style>
+  .tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); border-bottom: 1px solid var(--gray-line); }
+  .tab-btn { padding: 10px 4px; margin-right: var(--space-5); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-warm); border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--ink); border-color: var(--ink); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .log-row { display: flex; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--gray-line); font-size: 13px; }
+  .log-row .time { color: var(--gray-warm); font-family: var(--font-mono); min-width: 140px; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop"></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>ADMIN</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">Табло</a>
+      <a href="ambassadors.html">Амбасадори</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="applications.html">Кандидатури</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="notifications.html" class="active">Известия</a>
+      <a href="settings.html">Настройки</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Администратор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Известия и одит</h1>
+      <span></span>
+    </header>
+
+    <main class="content">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="notifications">Известия</button>
+        <button class="tab-btn" data-tab="audit">Одит лог</button>
+      </div>
+
+      <div class="tab-panel active" id="panel-notifications">
+        <div id="notif-list"></div>
+      </div>
+
+      <div class="tab-panel" id="panel-audit">
+        <div id="audit-list"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module">
+  import { supabase } from "../js/api.js";
+  import { initAdminPage, loadAuditLog, formatDateTime } from "../js/admin.js";
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+    });
+  });
+
+  async function loadNotifications(adminId) {
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", adminId).order("created_at", { ascending: false }).limit(100);
+    const list = document.getElementById("notif-list");
+    if (!data || data.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span class="eyebrow">Няма известия</span>Тук ще виждате нови заявки и системни известия.</div>`;
+      return;
+    }
+    list.innerHTML = data.map((n) => `
+      <div class="log-row">
+        <span class="time">${formatDateTime(n.created_at)}</span>
+        <div><strong>${n.title}</strong><br><span style="color:var(--gray-warm);">${n.message}</span></div>
+      </div>`).join("");
+  }
+
+  async function loadAudit() {
+    const logs = await loadAuditLog();
+    const list = document.getElementById("audit-list");
+    if (logs.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span class="eyebrow">Няма записи</span>Одит логът ще се попълва автоматично при всяко действие.</div>`;
+      return;
+    }
+    list.innerHTML = logs.map((l) => `
+      <div class="log-row">
+        <span class="time">${formatDateTime(l.created_at)}</span>
+        <div>
+          <strong>${l.action}</strong> — ${l.profiles?.first_name || 'Система'} ${l.profiles?.last_name || ''}
+          <br><span class="mono" style="font-size:11px; color:var(--gray-warm);">${l.target_type || ''} ${l.target_id || ''}</span>
+        </div>
+      </div>`).join("");
+  }
+
+  (async () => {
+    const profile = await initAdminPage();
+    if (!profile) return;
+    await Promise.all([loadNotifications(profile.id), loadAudit()]);
+  })();
+</script>
+</body>
+</html>

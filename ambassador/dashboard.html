@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Табло — TT Ambassador Portal</title>
+<link rel="stylesheet" href="../css/style.css" />
+<link rel="stylesheet" href="../css/dashboard.css" />
+<link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar-backdrop" data-hamburger-backdrop></div>
+  <aside class="sidebar">
+    <div class="sidebar-mark">TT <span>PORTAL</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="active">Табло</a>
+      <a href="sales.html">Продажби</a>
+      <a href="payouts.html">Изплащания</a>
+      <a href="resources.html">Ресурси</a>
+      <a href="profile.html">Профил</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong data-user-name>—</strong>Амбасадор</div>
+      <a href="#" class="sidebar-logout" data-logout>Изход</a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
+      <h1>Табло</h1>
+      <a href="#" class="notif-bell" aria-label="Известия">
+        🔔<span class="notif-badge" data-notif-badge style="display:none;"></span>
+      </a>
+    </header>
+
+    <main class="content">
+      <p style="margin-bottom:var(--space-6); color:var(--gray-warm);">Добре дошъл, <strong data-user-first-name>—</strong></p>
+
+      <div class="stat-grid">
+        <div class="stat-card featured">
+          <div class="eyebrow">Налична комисиона</div>
+          <div class="value mono" id="stat-available">—</div>
+          <a href="payouts.html" class="btn btn-primary">ИЗТЕГЛИ КОМИСИОНА</a>
+        </div>
+        <div class="stat-card">
+          <div class="eyebrow">Общо продажби</div>
+          <div class="value mono" id="stat-total-sales">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="eyebrow">Стойност на продажбите</div>
+          <div class="value mono" id="stat-sales-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="eyebrow">Процент комисиона</div>
+          <div class="value mono" id="stat-commission-rate">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="eyebrow">Изчакваща комисиона</div>
+          <div class="value mono" id="stat-pending">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="eyebrow">Изплатено общо</div>
+          <div class="value mono" id="stat-paid">—</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2 style="font-size:20px;">Последни продажби</h2>
+        <a href="sales.html" class="btn btn-ghost">Виж всички →</a>
+      </div>
+      <div class="table-wrap responsive-cards">
+        <table>
+          <thead>
+            <tr><th>Поръчка</th><th>Дата</th><th>Стойност</th><th>Комисиона</th><th>Статус</th></tr>
+          </thead>
+          <tbody id="recent-sales-body">
+            <tr><td colspan="5"><div class="skeleton" style="height:20px;"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script type="module" src="../js/dashboard.js"></script>
+</body>
+</html>
