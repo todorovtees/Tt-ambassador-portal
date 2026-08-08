@@ -1,6 +1,6 @@
 // js/api.js — Supabase client + shared helpers used across every page.
 //
-// The anon key below is SAFE to expose in frontend code: it grants no
+// The anon key below is SAFE to expose in frontend code: it grants no 
 // access on its own. Every table is protected by Row Level Security
 // policies defined in supabase/migrations/0001_init.sql, so the database
 // itself enforces "ambassadors see only their own data" and
