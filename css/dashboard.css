@@ -168,3 +168,7 @@ tbody tr:hover { background: var(--beige); cursor: pointer; }
   font-size: 13px;
   color: var(--brass);
 }
+
+.sidebar-backdrop {
+  display: none;
+}
