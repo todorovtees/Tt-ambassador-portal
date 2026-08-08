@@ -34,7 +34,7 @@ function openWithdrawModal(available) {
           <input id="wd-revolut" name="revolut_identifier" required placeholder="@username" value="${currentProfile.revolut_identifier || ''}" />
         </div>
         <div class="field" id="amount-field">
-          <label for="wd-amount">Сума за теглене (лв.)</label>
+          <label for="wd-amount">Сума за теглене (€)</label>
           <input id="wd-amount" name="amount" type="number" min="0.01" step="0.01" max="${available}" required />
           <span class="error-text" id="amount-error"></span>
         </div>
@@ -201,7 +201,7 @@ function openEditModal(request) {
           <input id="ed-revolut" name="revolut_identifier" required value="${request.revolut_identifier}" />
         </div>
         <div class="field" id="ed-amount-field">
-          <label for="ed-amount">Сума (лв.)</label>
+          <label for="ed-amount">Сума (€)</label>
           <input id="ed-amount" name="amount" type="number" min="0.01" step="0.01" required value="${request.amount}" />
           <span class="error-text" id="ed-amount-error"></span>
         </div>
