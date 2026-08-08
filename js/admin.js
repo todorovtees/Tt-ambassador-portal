@@ -1,6 +1,8 @@
 // js/admin.js — all admin-only pages import from here by page id
 
 import { supabase, formatBGN, formatDate, formatDateTime, toast, friendlyError, confirmAction, functionsUrl } from "./api.js";
+import { requireAuth, bindSidebarToggle } from "./auth.js";
+
 export let adminProfile = null;
 
 export async function initAdminPage() {
@@ -68,8 +70,8 @@ function statusLabel(s) { return { active: "Активен", suspended: "Спр�
 
 export async function createAmbassador(payload) {
   const { data: { session } } = await supabase.auth.getSession();
-await fetch(`${supabase.supabaseUrl}/functions/v1/notify-payout-event`, {
-  method: "POST",
+  const res = await fetch(functionsUrl("admin-create-ambassador"), {
+    method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
     body: JSON.stringify(payload),
   });
@@ -126,8 +128,8 @@ export async function setPayoutStatus(id, status, extra = {}) {
 async function notifyPayoutEvent(event, payoutId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-await fetch(functionsUrl("notify-payout-event"), {
-  method: "POST",
+    await fetch(functionsUrl("notify-payout-event"), {
+      method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ event, payout_id: payoutId }),
     });
