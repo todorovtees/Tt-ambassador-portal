@@ -1,8 +1,6 @@
 // js/admin.js — all admin-only pages import from here by page id
 
-import { supabase, formatBGN, formatDate, formatDateTime, toast, friendlyError, confirmAction } from "./api.js";
-import { requireAuth, bindSidebarToggle } from "./auth.js";
-
+import { supabase, formatBGN, formatDate, formatDateTime, toast, friendlyError, confirmAction, functionsUrl } from "./api.js";
 export let adminProfile = null;
 
 export async function initAdminPage() {
