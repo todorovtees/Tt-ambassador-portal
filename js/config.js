@@ -11,7 +11,7 @@
 // Then include this script BEFORE any module scripts on each HTML page:
 // <script src="/js/config.js"></script>
 
-window.__TT_CONFIG__ = { // EDIT THESE TWO VALUES —see config.example.js for instructions
-  SUPABASE_URL: "https://YOUR-PROJECT-REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+window.__TT_CONFIG__ = {
+  SUPABASE_URL: "https://makhncewmxqcpqjfhrtn.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_AHOOg7WrKFVHzbaun0VO3g_aYhlpYCq",
 };
