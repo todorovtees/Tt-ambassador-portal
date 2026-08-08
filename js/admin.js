@@ -70,8 +70,8 @@ function statusLabel(s) { return { active: "Активен", suspended: "Спр�
 
 export async function createAmbassador(payload) {
   const { data: { session } } = await supabase.auth.getSession();
-  const res = await fetch(`${supabase.supabaseUrl}/functions/v1/admin-create-ambassador`, {
-    method: "POST",
+const res = await fetch(functionsUrl("admin-create-ambassador"), {
+  method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
     body: JSON.stringify(payload),
   });
