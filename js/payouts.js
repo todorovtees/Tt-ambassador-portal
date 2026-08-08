@@ -1,6 +1,6 @@
 // js/payouts.js — withdraw modal, payout list, 60-minute edit countdown
 
-import { supabase, formatBGN, formatDate, toast, friendlyError, getAvailableBalance, confirmAction } from "./api.js";
+import { supabase, formatBGN, formatDate, toast, friendlyError, getAvailableBalance, confirmAction, functionsUrl } from "./api.js";
 import { requireAuth, bindSidebarToggle } from "./auth.js";
 
 let currentProfile = null;
@@ -105,8 +105,7 @@ function openWithdrawModal(available) {
 async function notifyPayoutEvent(event, payoutId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    await fetch(`${supabase.supabaseUrl}/functions/v1/notify-payout-event`, {
-      method: "POST",
+await fetch(functionsUrl("notify-payout-event"), {      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
