@@ -18,8 +18,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 /* ---------------- Formatting ---------------- */
 export function formatBGN(amount) {
   const n = Number(amount || 0);
-  return n.toLocaleString("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " лв.";
-}
+return n.toLocaleString("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";}
 
 export function formatDate(dateStr) {
   if (!dateStr) return "—";
