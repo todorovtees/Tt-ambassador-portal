@@ -14,6 +14,9 @@ export const SUPABASE_URL = window.__TT_CONFIG__?.SUPABASE_URL || "https://YOUR-
 export const SUPABASE_ANON_KEY = window.__TT_CONFIG__?.SUPABASE_ANON_KEY || "YOUR-ANON-KEY";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export function functionsUrl(name) {
+  return `${SUPABASE_URL}/functions/v1/${name}`;
+}
 
 /* ---------------- Formatting ---------------- */
 export function formatBGN(amount) {
