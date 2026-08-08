@@ -72,8 +72,8 @@ async function loadRecentSales(profile) {
     <tr>
       <td data-label="Поръчка" class="mono">#${s.order_number}</td>
       <td data-label="Дата">${new Date(s.sale_date).toLocaleDateString("bg-BG")}</td>
-      <td data-label="Стойност" class="mono">${Number(s.sale_value).toFixed(2)} лв.</td>
-      <td data-label="Комисиона" class="mono">${Number(s.commission_amount).toFixed(2)} лв.</td>
+      <td data-label="Стойност" class="mono">${Number(s.sale_value).toFixed(2)} €</td>
+      <td data-label="Комисиона" class="mono">${Number(s.commission_amount).toFixed(2)} €</td>
       <td data-label="Статус"><span class="pill pill-${s.status}">${s.status}</span></td>
     </tr>`).join("");
 }
