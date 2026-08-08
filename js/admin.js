@@ -128,8 +128,8 @@ export async function setPayoutStatus(id, status, extra = {}) {
 async function notifyPayoutEvent(event, payoutId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    await fetch(`${supabase.supabaseUrl}/functions/v1/notify-payout-event`, {
-      method: "POST",
+await fetch(functionsUrl("notify-payout-event"), {
+  method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ event, payout_id: payoutId }),
     });
