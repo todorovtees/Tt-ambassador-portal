@@ -126,7 +126,7 @@
           <div class="field"><label>Амбасадор</label><select name="ambassador_id" id="sale-ambassador" required></select></div>
           <div class="field"><label>Номер на поръчка</label><input name="order_number" required placeholder="TT-1024" /></div>
           <div class="field"><label>Дата</label><input name="sale_date" type="date" required /></div>
-          <div class="field"><label>Стойност на поръчката (лв.)</label><input name="sale_value" id="sale-value" type="number" min="0.01" step="0.01" required /></div>
+          <div class="field"><label>Стойност на поръчката (€)</label><input name="sale_value" id="sale-value" type="number" min="0.01" step="0.01" required /></div>
           <div class="field"><label>Статус</label>
             <select name="status"><option value="pending">Изчакваща</option><option value="approved">Одобрена</option></select>
           </div>
@@ -149,7 +149,7 @@
     function updatePreview() {
       const rate = Number(ambassadorSelect.selectedOptions[0]?.dataset.rate || 0);
       const value = Number(valueInput.value || 0);
-      preview.textContent = `Комисиона: ${(value * rate / 100).toFixed(2)} лв. (${rate}%)`;
+      preview.textContent = `Комисиона: ${(value * rate / 100).toFixed(2)} € (${rate}%)`;
     }
     ambassadorSelect.addEventListener("change", updatePreview);
     valueInput.addEventListener("input", updatePreview);
