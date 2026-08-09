@@ -118,7 +118,7 @@
         <p>${r.category || 'Без категория'} · ${formatDate(r.created_at)}</p>
         <div style="display:flex; gap:8px;">
           <a href="${r.file_url}" target="_blank" rel="noopener" class="btn btn-ghost btn-inline">Отвори</a>
-          <button class="btn btn-ghost btn-inline" data-edit="${r.id}">✎ Редактирай</button>
+          <button class="btn btn-ghost btn-inline" data-edit="${r.id}">✎</button>
           <button class="btn btn-danger btn-inline" data-delete="${r.id}">Изтрий</button>
         </div>
       </div>`).join("");
