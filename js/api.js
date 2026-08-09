@@ -70,6 +70,7 @@ export function toast(message, type = "success") {
 /* ---------------- Friendly Bulgarian error mapping ---------------- */
 const ERROR_MESSAGES = {
   INSUFFICIENT_BALANCE: "Недостатъчна налична комисиона.",
+  BELOW_MINIMUM_PAYOUT: "Сумата е под минималната за теглене.",
   EDIT_WINDOW_EXPIRED: "Периодът за редакция на заявката е изтекъл.",
   REQUEST_LOCKED: "Заявката вече не може да бъде редактирана.",
   invalid_credentials: "Невалиден имейл или парола.",
