@@ -74,7 +74,8 @@
       return;
     }
     grid.innerHTML = data.map((r) => `
-      <div class="resource-card">
+<div class="resource-card">
+        <div style="aspect-ratio:4/3; background:var(--beige) url('${r.file_url}') center/cover; border-radius:var(--radius-sm); margin-bottom:var(--space-3);"></div>
         <h3>${r.title}</h3>
         <p>${r.category || 'Без категория'} · ${formatDate(r.created_at)}</p>
         <div style="display:flex; gap:8px;">
