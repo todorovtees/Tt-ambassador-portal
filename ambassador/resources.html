@@ -68,8 +68,8 @@
     grid.innerHTML = data.map((r) => `
       <div class="resource-card">
         <a href="${r.file_url}" target="_blank" rel="noopener">
-          <div class="thumb">${r.category || 'Файл'}</div>
-        </a>
+<div class="thumb" style="background-image:url('${r.file_url}'); background-size:cover; background-position:center;"></div>
+</a>
         <div class="body">
           <h3>${r.title}</h3>
           <p>${r.description || ''}</p>
