@@ -66,7 +66,7 @@
     overlay.className = "modal-overlay";
     overlay.innerHTML = `
       <div class="modal" style="max-width:480px;">
-        <h2 style="font-size:20px; margin-bottom:20px;">Редактирай ресурс</h2>
+        <h2 style="font-size:20px; margin-bottom:20px;">✎ Редактирай ресурс</h2>
         <form id="edit-resource-form">
           <div class="field"><label>Заглавие</label><input name="title" required value="${resource.title}" /></div>
           <div class="field"><label>Категория</label><input name="category" value="${resource.category || ''}" /></div>
@@ -118,7 +118,7 @@
         <p>${r.category || 'Без категория'} · ${formatDate(r.created_at)}</p>
 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
 <a href="${r.file_url}" target="_blank" rel="noopener" class="btn btn-ghost btn-inline">Отвори</a>
-<button class="btn btn-ghost btn-inline" data-edit="${r.id}" title="Редактирай" style="min-width:44px; padding:8px 12px;">✎</button>
+<button class="btn btn-ghost btn-inline" data-edit="${r.id}" title="Редактирай" style="min-width:44px; padding:8px 12px;">✎ Редактирай</button>
 <button class="btn btn-danger btn-inline" data-delete="${r.id}">Изтрий</button>
         </div>
       </div>`).join("");
