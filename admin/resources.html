@@ -34,14 +34,12 @@
       <a href="#" class="sidebar-logout" data-logout>Изход</a>
     </div>
   </aside>
-
   <div>
     <header class="topbar">
       <button class="hamburger" data-hamburger aria-label="Меню">☰</button>
       <h1>TT Ресурси</h1>
       <span></span>
     </header>
-
     <main class="content">
       <div class="card" style="margin-bottom:var(--space-6); max-width:520px;">
         <h2 style="font-size:16px; margin-bottom:var(--space-4);">Качи нов ресурс</h2>
@@ -53,18 +51,58 @@
           <button type="submit" class="btn btn-primary">КАЧИ</button>
         </form>
       </div>
-
       <div class="resource-grid" id="resource-grid"></div>
     </main>
   </div>
 </div>
-
 <script src="../js/config.js"></script>
 <script type="module">
   import { supabase } from "../js/api.js";
   import { initAdminPage, formatDate, toast, friendlyError, confirmAction } from "../js/admin.js";
-
   const BUCKET = "resources";
+
+  function openEditModal(resource) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px;">
+        <h2 style="font-size:20px; margin-bottom:20px;">Редактирай ресурс</h2>
+        <form id="edit-resource-form">
+          <div class="field"><label>Заглавие</label><input name="title" required value="${resource.title}" /></div>
+          <div class="field"><label>Категория</label><input name="category" value="${resource.category || ''}" /></div>
+          <div class="field"><label>Описание</label><textarea name="description" rows="3">${resource.description || ''}</textarea></div>
+          <div style="display:flex; gap:12px; margin-top:20px;">
+            <button type="button" class="btn btn-secondary" data-close>Отказ</button>
+            <button type="submit" class="btn btn-primary btn-block">ЗАПАЗИ</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay || e.target.dataset.close !== undefined) overlay.remove();
+    });
+
+    overlay.querySelector("#edit-resource-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      try {
+        const { error } = await supabase.from("resources").update({
+          title: form.title.value.trim(),
+          category: form.category.value.trim() || null,
+          description: form.description.value.trim() || null,
+        }).eq("id", resource.id);
+        if (error) throw error;
+        toast("Ресурсът е обновен успешно.");
+        overlay.remove();
+        await refresh();
+      } catch (err) {
+        toast(friendlyError(err), "error");
+        btn.disabled = false;
+      }
+    });
+  }
 
   async function refresh() {
     const { data } = await supabase.from("resources").select("*").order("created_at", { ascending: false });
@@ -80,10 +118,17 @@
         <p>${r.category || 'Без категория'} · ${formatDate(r.created_at)}</p>
         <div style="display:flex; gap:8px;">
           <a href="${r.file_url}" target="_blank" rel="noopener" class="btn btn-ghost btn-inline">Отвори</a>
+          <button class="btn btn-ghost btn-inline" data-edit="${r.id}">✎ Редактирай</button>
           <button class="btn btn-danger btn-inline" data-delete="${r.id}">Изтрий</button>
         </div>
       </div>`).join("");
 
+    grid.querySelectorAll("[data-edit]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const resource = data.find((r) => r.id === btn.dataset.edit);
+        openEditModal(resource);
+      });
+    });
     grid.querySelectorAll("[data-delete]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const ok = await confirmAction("Сигурни ли сте, че искате да изтриете този ресурс?");
@@ -95,12 +140,10 @@
       });
     });
   }
-
   (async () => {
     const profile = await initAdminPage();
     if (!profile) return;
     await refresh();
-
     document.getElementById("upload-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -113,7 +156,6 @@
         const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, file);
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
         const { error } = await supabase.from("resources").insert({
           title: form.title.value.trim(),
           description: form.description.value.trim() || null,
@@ -122,7 +164,6 @@
           created_by: profile.id,
         });
         if (error) throw error;
-
         toast("Ресурсът е качен успешно.");
         form.reset();
         await refresh();
