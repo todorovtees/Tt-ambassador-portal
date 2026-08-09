@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     if (event === "created") {
       to = settings?.admin_email ?? "admin@todorovtees.com";
       subject = "Нова заявка за изплащане на комисиона";
-      text = `Амбасадор: ${payout.profiles.first_name} ${payout.profiles.last_name}\nСума: ${payout.amount} лв.\nЗаявка: #${payout.request_number}\nСтатус: Подадена`;
+text = `Амбасадор: ${payout.profiles.first_name} ${payout.profiles.last_name}\nСума: ${payout.amount} €\nЗаявка: #${payout.request_number}\nСтатус: Подадена`;
     } else {
       to = payout.profiles.email;
       const statusText: Record<string, string> = {
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
         under_review: "в преглед",
       };
       subject = `Заявка #${payout.request_number} — ${statusText[payout.status] ?? payout.status}`;
-      text = `Вашата заявка за изплащане на ${payout.amount} лв. вече е със статус: ${statusText[payout.status] ?? payout.status}.`;
+text = `Вашата заявка за изплащане на ${payout.amount} € вече е със статус: ${statusText[payout.status] ?? payout.status}.`;
     }
 
     const res = await fetch("https://api.resend.com/emails", {
